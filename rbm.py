@@ -1,3 +1,8 @@
+# This code largely includes code written and copyrighted by the Theano developers
+# and found at: http://deeplearning.net/tutorial/code/rbm.py
+# The licence notice for that code is found at:
+# http://deeplearning.net/tutorial/LICENSE.html?highlight=license
+
 from __future__ import print_function
 
 import timeit
