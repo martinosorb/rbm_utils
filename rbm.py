@@ -1,5 +1,5 @@
-# This code largely includes code written and copyrighted by the Theano developers
-# and found at: http://deeplearning.net/tutorial/code/rbm.py
+# This code largely includes code written and copyrighted by the Theano
+# developers and found at: http://deeplearning.net/tutorial/code/rbm.py
 # The licence notice for that code is found at:
 # http://deeplearning.net/tutorial/LICENSE.html?highlight=license
 
@@ -64,7 +64,8 @@ class RBM(object):
         :param vbias: None for standalone RBMs or a symbolic variable
         pointing to a shared visible units bias
 
-        :param reg_weight: weight of a regularisatio term (add by hand to cost function)
+        :param reg_weight: weight of a regularisatio term
+        (add by hand to cost function)
         """
 
         self.n_visible = n_visible
@@ -96,7 +97,8 @@ class RBM(object):
             # theano shared variables for weights and biases
             self.W = theano.shared(value=initial_W, name='W', borrow=True)
         else:
-            self.W = theano.shared(value=W.astype(dtype=theano.config.floatX), name='W', borrow=True)
+            self.W = theano.shared(value=W.astype(dtype=theano.config.floatX),
+                                   name='W', borrow=True)
 
         if hbias is None:
             # create shared variable for hidden units bias
@@ -137,7 +139,7 @@ class RBM(object):
         if not input:
             self.input = T.matrix('input')
 
-        #self.W.set_value(Wt)# = theano.shared(value=Wt, name='W', borrow=True)
+        # self.W.set_value(Wt)# = theano.shared(value=Wt, name='W', borrow=True)
         # self.W = W
         # self.hbias = hbias
         # self.vbias = vbias
@@ -281,32 +283,8 @@ class RBM(object):
         # note that we only need the sample at the end of the chain
         chain_end = nv_samples[-1]
 
-        # compute cost function with regulariser:
-
-        # cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * ( T.sum(T.abs_(self.W))/(self.n_hidden+self.n_visible) + T.sum(T.abs_(self.hbias))/self.n_hidden)
-
-        # cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight *  T.sum(T.abs_(self.W))
-
-        # cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * ( T.sum(T.abs_(self.hbias))/self.n_hidden)
-
-        # cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) - self.reg_weight * ( T.sum(self.hbias**2)/self.n_hidden)
-
-        # cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * \
-        #     T.sum(self.W**2)
-
-        # cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * \
-        #    T.nlinalg.eigh(T.dot(self.W,self.W.T))[0][-1] #/ (self.n_hidden + self.n_visible)
-
-        cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end))
-
-        # Wt = self.W.get_value()
-        # #xxx = np.roll(self.W.get_value()[:int(self.n_visible/2),:],1,axis=1)
-        # Wt[:int(self.n_visible/2),:] = numpy.roll(Wt[:int(self.n_visible/2),:],1,axis=1)
-        # #self.W[:int(self.n_visible/2),:] = np.roll(self.W.get_value()[:int(self.n_visible/2),:],1,axis=1)
-        # #self.W[:int(self.n_visible/2),:] = xxx
-        # self.W.set_value(Wt)# = theano.shared(value=Wt, name='W', borrow=True)
-        # print('.')
-
+        cost = T.mean(self.free_energy(self.input)) - \
+            T.mean(self.free_energy(chain_end))
 
         # We must not compute the gradient through the gibbs sampling
         gparams = T.grad(cost, self.params, consider_constant=[chain_end])
@@ -603,7 +581,7 @@ class RBM(object):
         q = self.hbias
         exponents = -q - numpy.matmul(s, J)
         return numpy.dot(f, s) - numpy.sum(numpy.log1p(numpy.exp(exponents)))
-    
+
     def savenp(self, filename):
         numpy.savez(filename,
                     weights=self.W.get_value().T,
