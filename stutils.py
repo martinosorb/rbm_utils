@@ -2,6 +2,15 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 
+def gen_cov(g):
+    mean, covariance = 0, 0
+    for i, x in enumerate(g):
+        diff = x - mean
+        mean += diff/(i+1)
+        covariance += np.outer(diff, diff) * i / (i+1)
+    return covariance/i
+
+
 def rbm_fim(sample, nvis):
     # it should accept either a sample given as an array
     # for example one saved before, or a generator given
@@ -12,8 +21,8 @@ def rbm_fim(sample, nvis):
         hid = state[nvis:]
         prod = np.outer(vis, hid)
         return np.hstack([vis, hid, np.ravel(prod)])
-    s = [fimfunction_rbm(x) for x in sample]
-    return np.cov(s, rowvar=0)
+    s = (fimfunction_rbm(x) for x in sample)
+    return gen_cov(s)
 
 
 def fim_eig(fim, nvis, return_eigenvectors=False):
