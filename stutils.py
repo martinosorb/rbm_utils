@@ -11,7 +11,32 @@ def gen_cov(g):
     return covariance/i
 
 
-def rbm_fim(sample, nvis):
+# def rbm_fim(sample, nvis):
+#     # it should accept either a sample given as an array
+#     # for example one saved before, or a generator given
+#     # by the 'sample' method. As a consequence, this is
+#     # NOT OPTIMISED for when sample is a np.array.
+#     def fimfunction_rbm(state):
+#         vis = state[:nvis]
+#         hid = state[nvis:]
+#         prod = np.outer(vis, hid)
+#         return np.hstack([vis, hid, np.ravel(prod)])
+#     s = [fimfunction_rbm(x) for x in sample]
+#     return np.cov(s, rowvar=0)
+
+
+def rbm_fim_numpy(sample, nvis):
+    sample = np.asarray(sample)
+    nsamples = sample.shape[0]
+    vis = sample[:, :nvis]
+    hid = sample[:, nvis:]
+    prod = vis[:, :, np.newaxis] * hid[:, np.newaxis, :]
+    print(prod.shape)
+    s = np.hstack([vis, hid, prod.reshape((nsamples, -1))])
+    return np.cov(s, rowvar=0)
+
+
+def rbm_fim_lowmem(sample, nvis):
     # it should accept either a sample given as an array
     # for example one saved before, or a generator given
     # by the 'sample' method. As a consequence, this is
