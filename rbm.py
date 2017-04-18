@@ -572,8 +572,7 @@ class RBM(object):
         # construct image
         if output_file is not None:
             numpy.save(output_file, sample_data)
-        else:
-            return sample_data
+        return sample_data
 
     def vis_energy(self, s):
         J = self.W
