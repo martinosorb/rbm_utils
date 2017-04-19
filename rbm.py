@@ -559,7 +559,7 @@ class RBM(object):
         for idx in range(n_samples):
             # generate `plot_every` intermediate samples that we discard,
             # because successive samples in the chain are too correlated
-            if self.verbose:
+            if self.verbose == True:
                 print(' ... getting sample %d' % idx, end='\r')
             if include_hidden:
                 vis_mf, sample_v, sample_h = sample_fn()
