@@ -10,7 +10,8 @@ import numpy
 import theano
 import theano.tensor as T
 
-from theano.tensor.shared_randomstreams import RandomStreams
+#from theano.tensor.shared_randomstreams import RandomStreams
+from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 
 def LoadRBM(fname):
@@ -39,7 +40,8 @@ class RBM(object):
         vbias=None,
         numpy_rng=None,
         theano_rng=None,
-        reg_weight=0.
+        reg_weight=0.,
+        verbose = True
     ):
         """
         RBM constructor. Defines the parameters of the model along with
@@ -139,15 +141,10 @@ class RBM(object):
         if not input:
             self.input = T.matrix('input')
 
-        # self.W.set_value(Wt)# = theano.shared(value=Wt, name='W', borrow=True)
-        # self.W = W
-        # self.hbias = hbias
-        # self.vbias = vbias
         self.theano_rng = theano_rng
-        # **** WARNING: It is not a good idea to put things in this list
-        # other than shared variables created in this function.
         self.params = [self.W, self.hbias, self.vbias]
         self.reg_weight = reg_weight
+        self.verbose = verbose
 
     def free_energy(self, v_sample):
         ''' Function to compute the free energy '''
@@ -434,7 +431,8 @@ class RBM(object):
             name='train_rbm'
         )
 
-        print('... training started, ' + str(n_train_batches) + ' batches')
+        if self.verbose:
+            print('... training started, ' + str(n_train_batches) + ' batches')
         plotting_time = 0.
         start_time = timeit.default_timer()
 
@@ -456,9 +454,8 @@ class RBM(object):
             mean_cost = []
             for batch_index in range(n_train_batches):
                 mean_cost += [train_rbm(batch_index)]
-
-            print('Training epoch %d, cost is ' % (epoch + 1),
-                  numpy.mean(mean_cost))
+            if self.verbose:
+                print('Training epoch %d, cost is ' % (epoch + 1), numpy.mean(mean_cost))
             pseudo_likelihoods[epoch] = numpy.mean(mean_cost)
 
         end_time = timeit.default_timer()
@@ -473,7 +470,8 @@ class RBM(object):
                         weights=weights,
                         pseudo_likelihoods=pseudo_likelihoods)
 
-        print('Training took %f minutes' % (pretraining_time / 60.))
+        if self.verbose:
+            print('Training took %f minutes' % (pretraining_time / 60.))
 
     def sample(self, test_x, output_file='rbm_samples.npy', n_chains=20,
                n_samples=10, plot_every=1000, include_hidden=False):
@@ -561,7 +559,8 @@ class RBM(object):
         for idx in range(n_samples):
             # generate `plot_every` intermediate samples that we discard,
             # because successive samples in the chain are too correlated
-            print(' ... getting sample %d' % idx, end='\r')
+            if self.verbose:
+                print(' ... getting sample %d' % idx, end='\r')
             if include_hidden:
                 vis_mf, sample_v, sample_h = sample_fn()
                 sample_data[idx] = numpy.hstack([sample_v, sample_h])
