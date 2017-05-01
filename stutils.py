@@ -1,7 +1,60 @@
 import numpy as np
 from matplotlib import pyplot as plt
+from scipy.stats import entropy
+from scipy.misc import logsumexp
+from itertools import product
 
 
+# NOT tested
+def data_model_kldiv(data, weights, visbias, hidbias, axis=0):
+    """
+    Computes D_KL(Data Sample||Model).
+    """
+    # finding patterns and their logprobabilities in the data
+    patterns, data_freq = unique(data, axis)
+    data_freq = data_freq / data_freq.sum()
+    # logprobs for the patterns in the data, from the RBM parameters
+    rbm_logprobs = rbm_pattern_logprob(patterns, visbias, hidbias, weights)
+    rbm_probs = np.exp(rbm_logprobs)
+    return entropy(data_freq, rbm_probs)
+
+
+# tested, from write_probs.py
+def exact_logZ(bias1, bias2, weights):
+    if bias1.size < bias2.size:
+        bias1, bias2, weights = bias2, bias1, weights.T
+    num = np.size(bias2)
+    all_patterns = np.array(list(product([True, False], repeat=num)))
+    all_logprob = rbm_pattern_logprob_unnorm(
+                all_patterns, weights.T, bias1, bias2)
+    return logsumexp(all_logprob)
+
+
+# tested, from write_probs.py
+def rbm_pattern_logprob_unnorm(patterns, weights, bias1, bias2):
+    r = np.dot(patterns, weights.T)
+    r += bias1
+    r = np.sum(np.log1p(np.exp(r)), axis=1)
+    r += np.dot(patterns, bias2)
+    return r
+
+
+# from write_probs.py
+def rbm_pattern_logprob(patterns, visbias, hidbias, weights):
+    return rbm_pattern_logprob_unnorm(
+            patterns, weights, hidbias, visbias) - \
+            exact_logZ(visbias, hidbias, weights)
+
+
+# from write_probs.py
+def data_pattern_logprob(data, axis=0):
+    patterns, data_freq = unique(data, axis)
+    data_freq = data_freq / data_freq.sum()
+    data_logprobs = np.log(data_freq)
+    return patterns, data_logprobs
+
+
+# one-pass covariance, may be useful in the future
 def gen_cov(g):
     mean, covariance = 0, 0
     for i, x in enumerate(g):
