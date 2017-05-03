@@ -11,8 +11,8 @@ def data_model_kldiv(data, weights, visbias, hidbias, axis=0):
     Computes D_KL(Data Sample||Model).
     """
     # finding patterns and their logprobabilities in the data
-    patterns, data_freq = unique(data, axis)
-    data_freq = data_freq / data_freq.sum()
+    patterns, data_freq = unique(data, axis=axis, return_counts=True)
+    data_freq = 1.*data_freq / data_freq.sum()
     # logprobs for the patterns in the data, from the RBM parameters
     rbm_logprobs = rbm_pattern_logprob(patterns, visbias, hidbias, weights)
     rbm_probs = np.exp(rbm_logprobs)
