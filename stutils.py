@@ -163,7 +163,7 @@ def zipf(array, axis=0):
     ncounts = array.shape[axis]
     _, counts = unique(array, axis=axis, return_counts=True)
     counts.sort()
-    return counts[::-1]/ncounts
+    return 1.*counts[::-1]/ncounts
 
 
 def plot_zipf(array, axis=0, **kwargs):
