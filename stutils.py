@@ -11,8 +11,8 @@ def data_model_kldiv(data, weights, visbias, hidbias, axis=0):
     Computes D_KL(Data Sample||Model).
     """
     # finding patterns and their logprobabilities in the data
-    patterns, data_freq = unique(data, axis)
-    data_freq = data_freq / data_freq.sum()
+    patterns, data_freq = unique(data, axis=axis, return_counts=True)
+    data_freq = 1.*data_freq / data_freq.sum()
     # logprobs for the patterns in the data, from the RBM parameters
     rbm_logprobs = rbm_pattern_logprob(patterns, visbias, hidbias, weights)
     rbm_probs = np.exp(rbm_logprobs)
@@ -84,7 +84,7 @@ def rbm_fim_numpy(sample, nvis):
     vis = sample[:, :nvis]
     hid = sample[:, nvis:]
     prod = vis[:, :, np.newaxis] * hid[:, np.newaxis, :]
-    print(prod.shape)
+    #print(prod.shape)
     s = np.hstack([vis, hid, prod.reshape((nsamples, -1))])
     return np.cov(s, rowvar=0)
 
@@ -106,10 +106,10 @@ def rbm_fim_lowmem(sample, nvis):
 def fim_eig(fim, nvis, return_eigenvectors=False):
     if return_eigenvectors:
         nhid = (fim.shape[0]-nvis)//(1+nvis)
-        print(nvis, nhid)
+        #print(nvis, nhid)
         val, vec = np.linalg.eigh(fim)
         vec = vec[:, ::-1]
-        print(vec[nvis+nhid:].shape)
+        #print(vec[nvis+nhid:].shape)
         return val[::-1], [vec[:nvis], vec[nvis:nvis+nhid],
                            vec[nvis+nhid:].reshape([nvis, nhid, -1])]
     return np.linalg.eigvalsh(fim)[::-1]
