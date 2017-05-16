@@ -99,7 +99,7 @@ def rbm_fim_numpy(sample, nvis):
     vis = sample[:, :nvis]
     hid = sample[:, nvis:]
     prod = vis[:, :, np.newaxis] * hid[:, np.newaxis, :]
-    #print(prod.shape)
+    # print(prod.shape)
     s = np.hstack([vis, hid, prod.reshape((nsamples, -1))])
     return np.cov(s, rowvar=0)
 
@@ -121,10 +121,10 @@ def rbm_fim_lowmem(sample, nvis):
 def fim_eig(fim, nvis, return_eigenvectors=False):
     if return_eigenvectors:
         nhid = (fim.shape[0]-nvis)//(1+nvis)
-        #print(nvis, nhid)
+        # print(nvis, nhid)
         val, vec = np.linalg.eigh(fim)
         vec = vec[:, ::-1]
-        #print(vec[nvis+nhid:].shape)
+        # print(vec[nvis+nhid:].shape)
         return val[::-1], [vec[:nvis], vec[nvis:nvis+nhid],
                            vec[nvis+nhid:].reshape([nvis, nhid, -1])]
     return np.linalg.eigvalsh(fim)[::-1]
