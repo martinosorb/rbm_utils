@@ -224,6 +224,13 @@ class RBM(object):
         return [pre_sigmoid_h1, h1_mean, h1_sample,
                 pre_sigmoid_v1, v1_mean, v1_sample]
 
+    def mean_h_given_v(self, v0_sample):
+        ''' This function infers state of hidden units given visible units '''
+        # compute the activation of the hidden units given a sample of
+        # the visibles
+        pre_sigmoid_h1, h1_mean = self.propup(v0_sample)
+        return T.mean(h1_mean)
+
     def get_cost_updates(self, lr=0.1, persistent=None, k=1):
         """This functions implements one step of CD-k or PCD-k
 
@@ -280,8 +287,15 @@ class RBM(object):
         # note that we only need the sample at the end of the chain
         chain_end = nv_samples[-1]
 
-        cost = T.mean(self.free_energy(self.input)) - \
-            T.mean(self.free_energy(chain_end))
+        if self.reg_weight==0.0:
+            cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end))
+            print('no regulariser')
+        else:
+            cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * T.sum(self.W**2)
+            print('with L2 on weights')
+            #cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * self.mean_h_given_v(self.input)
+            #print('with sparseness regulariser hidden biases')
+
 
         # We must not compute the gradient through the gibbs sampling
         gparams = T.grad(cost, self.params, consider_constant=[chain_end])
@@ -559,7 +573,7 @@ class RBM(object):
         for idx in range(n_samples):
             # generate `plot_every` intermediate samples that we discard,
             # because successive samples in the chain are too correlated
-            if self.verbose == True:
+            if self.verbose:
                 print(' ... getting sample %d' % idx, end='\r')
             if include_hidden:
                 vis_mf, sample_v, sample_h = sample_fn()
