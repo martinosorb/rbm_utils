@@ -6,7 +6,7 @@ from itertools import product
 
 
 # NOT tested
-def data_model_kldiv(data, weights, visbias, hidbias, axis=0):
+def data_model_kldiv(data, weights, visbias, hidbias, axis=0, serial=False):
     """
     Computes D_KL(Data Sample||Model).
     """
@@ -14,9 +14,21 @@ def data_model_kldiv(data, weights, visbias, hidbias, axis=0):
     patterns, data_freq = unique(data, axis)
     data_freq = data_freq / data_freq.sum()
     # logprobs for the patterns in the data, from the RBM parameters
-    rbm_logprobs = rbm_pattern_logprob(patterns, visbias, hidbias, weights)
+    rbm_logprobs = rbm_pattern_logprob(
+        patterns, visbias, hidbias, weights, serial)
     rbm_probs = np.exp(rbm_logprobs)
     return entropy(data_freq, rbm_probs)
+
+
+def exact_logZ_serial(bias1, bias2, weights):
+    if bias1.size < bias2.size:
+        bias1, bias2, weights = bias2, bias1, weights.T
+    num = np.size(bias2)
+    z = 0.
+    for pattern in product([True, False], repeat=num):
+        z += np.exp(rbm_pattern_logprob_unnorm(
+                    [pattern], weights.T, bias1, bias2))
+    return np.log(z)[0]
 
 
 # tested, from write_probs.py
@@ -39,11 +51,14 @@ def rbm_pattern_logprob_unnorm(patterns, weights, bias1, bias2):
     return r
 
 
-# from write_probs.py
-def rbm_pattern_logprob(patterns, visbias, hidbias, weights):
+# from write_probs.py + serial
+def rbm_pattern_logprob(patterns, visbias, hidbias, weights, serial=False):
+    if serial:
+        logZ = exact_logZ_serial(visbias, hidbias, weights)
+    else:
+        logZ = exact_logZ(visbias, hidbias, weights)
     return rbm_pattern_logprob_unnorm(
-            patterns, weights, hidbias, visbias) - \
-            exact_logZ(visbias, hidbias, weights)
+            patterns, weights, hidbias, visbias) - logZ
 
 
 # from write_probs.py
