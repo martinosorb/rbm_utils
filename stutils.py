@@ -181,10 +181,12 @@ def zipf(array, axis=0):
     return 1.*counts[::-1]/ncounts
 
 
-def plot_zipf(array, axis=0, **kwargs):
+def plot_zipf(array, axis=0, normalise=False, **kwargs):
     z = zipf(array, axis)
-    plt.loglog(np.arange(1, len(z)+1), z, **kwargs)
-
+    if normalise==True:
+        plt.loglog(np.arange(1, len(z)+1), z/z[0], **kwargs)
+    else:
+        plt.loglog(np.arange(1, len(z)+1), z, **kwargs)
 
 def unique(ar, return_index=False, return_inverse=False,
            return_counts=False, axis=None):

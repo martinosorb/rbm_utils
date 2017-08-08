@@ -14,7 +14,7 @@ import theano.tensor as T
 from theano.sandbox.rng_mrg import MRG_RandomStreams as RandomStreams
 
 
-def LoadRBM(fname):
+def LoadRBM(fname, beta=1.):
     # raise NotImplementedError("Need to check if we need W or W.T!")
     with numpy.load(fname) as file_data:
         W = file_data['weights'].T
@@ -23,7 +23,7 @@ def LoadRBM(fname):
     vs = vbias.size
     hs = hbias.size
     assert W.shape == (vs, hs), "Inconsistent weight matrix"
-    rbm = RBM(None, vs, hs, W, hbias, vbias)
+    rbm = RBM(None, vs, hs, W*beta, hbias*beta, vbias*beta)
     return rbm
 
 
