@@ -291,10 +291,12 @@ class RBM(object):
             cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end))
             print('no regulariser')
         else:
-            cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * T.sum(self.W**2)
-            print('with L2 on weights')
-            #cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * self.mean_h_given_v(self.input)
-            #print('with sparseness regulariser hidden biases')
+            #cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * T.sum(self.W**2)
+            #print('with L2 on weights')
+            #cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * T.sum(T.abs_(self.W))
+            #print('with L1 on weights')
+            cost = T.mean(self.free_energy(self.input)) - T.mean(self.free_energy(chain_end)) + self.reg_weight * self.mean_h_given_v(self.input)
+            print('with sparseness regulariser on hidden biases')
 
 
         # We must not compute the gradient through the gibbs sampling
@@ -392,7 +394,7 @@ class RBM(object):
               training_epochs=15, batch_size=20,
               output_all=None,
               output_final=None,
-              cd_steps=1):
+              cd_steps=1, persistent_chain=None):
         """
         :param data_x: the training set
 
@@ -417,10 +419,11 @@ class RBM(object):
 
         # initialize storage for the persistent chain (state = hidden
         # layer of chain)
-        persistent_chain = theano.shared(
-            numpy.zeros((batch_size, self.n_hidden),
-                        dtype=theano.config.floatX),
-            borrow=True)
+#        if persistent_chain is None:
+#            persistent_chain = theano.shared(
+#                numpy.zeros((batch_size, self.n_hidden),
+#                            dtype=theano.config.floatX),
+#                borrow=True)
 
         # get the cost and the gradient corresponding to one step of CD-k
         cost, updates = self.get_cost_updates(lr=learning_rate,
