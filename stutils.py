@@ -1,4 +1,5 @@
 import numpy as np
+from numpy import unique
 from matplotlib import pyplot as plt
 from scipy.stats import entropy
 from scipy.misc import logsumexp
@@ -170,8 +171,10 @@ def bin_timeseries(times, ids, dt):
 #     return binned.T
 
 
-def sum_over():
-    return NotImplemented
+def sum_over(a, n):
+    # the first dimension (0) must be time
+    b = np.reshape(a, [a.shape[0]//n, n, a.shape[1]])
+    return np.sum(b, axis=1)
 
 
 def zipf(array, axis=0):
@@ -183,49 +186,7 @@ def zipf(array, axis=0):
 
 def plot_zipf(array, axis=0, normalise=False, **kwargs):
     z = zipf(array, axis)
-    if normalise==True:
+    if normalise:
         plt.loglog(np.arange(1, len(z)+1), z/z[0], **kwargs)
     else:
         plt.loglog(np.arange(1, len(z)+1), z, **kwargs)
-
-def unique(ar, return_index=False, return_inverse=False,
-           return_counts=False, axis=None):
-    "Function will be in Numpy soon, it has an axis= argument"
-    ar = np.asanyarray(ar)
-    if axis is None:
-        return np.unique(ar, return_index, return_inverse, return_counts)
-    if abs(axis) > ar.ndim:
-        raise ValueError('Invalid axis kwarg specified for unique')
-
-    ar = np.swapaxes(ar, axis, 0)
-    orig_shape, orig_dtype = ar.shape, ar.dtype
-    # Must reshape to a contiguous 2D array for this to work...
-    ar = ar.reshape(orig_shape[0], -1)
-    ar = np.ascontiguousarray(ar)
-
-    if ar.dtype.char in (np.typecodes['AllInteger'] + 'S'):
-        # Optimization inspired by <http://stackoverflow.com/a/16973510/325565>
-        dtype = np.dtype((np.void, ar.dtype.itemsize * ar.shape[1]))
-    else:
-        dtype = [('f{i}'.format(i=i), ar.dtype) for i in range(ar.shape[1])]
-
-    try:
-        consolidated = ar.view(dtype)
-    except TypeError:
-        # There's no good way to do this for object arrays, etc...
-        msg = 'The axis argument to unique is not supported for dtype {dt}'
-        raise TypeError(msg.format(dt=ar.dtype))
-
-    def reshape_uniq(uniq):
-        uniq = uniq.view(orig_dtype)
-        uniq = uniq.reshape(-1, *orig_shape[1:])
-        uniq = np.swapaxes(uniq, 0, axis)
-        return uniq
-
-    output = np.unique(consolidated, return_index,
-                       return_inverse, return_counts)
-    if not (return_index or return_inverse or return_counts):
-        return reshape_uniq(output)
-    else:
-        uniq = reshape_uniq(output[0])
-        return tuple([uniq] + list(output[1:]))
