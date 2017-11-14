@@ -12,7 +12,7 @@ def dRBM(rbm, data1, data2):
     metric" (Gardella, Marre, Mora; arXiv 2017), page 4.
 
     Inputs:
-    rbm -- a Theano RBM object fitted to the joint dataset of data1 and data2
+    rbm -- an RBM object fitted to the joint dataset of data1 and data2
     data1 -- the first dataset (visible activations)
     data2 -- the second dataset (visible activations)
     """
@@ -23,6 +23,7 @@ def dRBM(rbm, data1, data2):
     h1 = np.mean(propup(data1, w, hbias), axis=0)
     h2 = np.mean(propup(data2, w, hbias), axis=0)
     Δh = h2 - h1
+    # return Δh
     assert len(h1) == rbm.n_hidden
     all_data = np.vstack([data1, data2])
     covm = np.cov(all_data, rowvar=0)
