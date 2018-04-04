@@ -190,3 +190,21 @@ def plot_zipf(array, axis=0, normalise=False, **kwargs):
         plt.loglog(np.arange(1, len(z)+1), z/z[0], **kwargs)
     else:
         plt.loglog(np.arange(1, len(z)+1), z, **kwargs)
+
+
+def detect_avalanches(activity):
+    a_sizes = []
+    a_durations = []
+    curr_a_duration, curr_a_size = 0, 0
+
+    for a in activity:
+        if a == 0:
+            if curr_a_duration > 0:
+                a_sizes.append(curr_a_size)
+                a_durations.append(curr_a_duration)
+            curr_a_size = 0
+            curr_a_duration = 0
+            continue
+        curr_a_duration += 1
+        curr_a_size += a
+    return a_sizes, a_durations
